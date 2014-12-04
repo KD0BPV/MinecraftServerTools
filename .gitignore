@@ -26,3 +26,8 @@
 *.exe
 *.out
 *.app
+
+# Editor files
+.kateproject*
+*.kate-swp
+*.swp
