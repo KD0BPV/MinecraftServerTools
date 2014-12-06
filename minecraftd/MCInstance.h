@@ -50,7 +50,7 @@ public:
 
 	void start();
 	void stop();
-	void restart() { stop(); start();}
+	void restart() { stop(); start(); }
 
 protected:
 	

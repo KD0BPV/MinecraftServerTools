@@ -7,7 +7,7 @@
  * 
  * Wraps server.jar so that it can be properly daemonized. Also
  * allows for multiple, independant instances and management of those
- * instances. Controls management connections
+ * instances. Controls management connections.
  * 
  * Copyright (C) 2014 E. Mark Anderson
  * 
@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <string>
+#include <fstream>
 
 // Fork(), pid_t
 #include <sys/types.h>
@@ -32,18 +33,49 @@
 // Exit()
 #include <stdlib.h>
 
-using namespace std;
+#include "MCInstance.h"
+#include "exceptions.h"
 
-void daemonize ();
+#define PID_FILE /var/run/minecraftd.pid
+
+enum class DaemonStatus
+{
+	PARENT,
+	CHILD,
+	ERROR
+}
+
+DaemonStatus daemonize ();
 
 int main (int argc, char *argv[])
 {
+	pid_t sid = 0;
+	try {
+		switch(daemonize(sid))
+		{
+			case DaemonStatus::PARENT:
+				return EXIT_SUCCESS;
+				break;
+			case DaemonStatus::CHILD:
+				break;
+			case DaemonStatus::ERROR:
+				throw new DaemonizeException(__FILE__, __LINE__);
+				break;
+		}
+	} catch (DaemonizeException& e)
+	{
+		
+	} catch (exception& e)
+	{
+		
+	}
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
-void daemonize ()
+DaemonStatus daemonize (pid_t& sid)
 {
+	DaemonStatus result = DaemonStatus::ERROR;
 	pid_t pid = fork();
 	
 	if (pid >= 0)
@@ -51,15 +83,31 @@ void daemonize ()
 		if (pid == 0)
 		{
 			// We are the child
+			result = DaemonStatus::CHILD;
+			sid = setsid();
+			if (sid < 0) throw new DaemonizeException(__FILE__, __LINE__);
+			umask(0);
+			if (chdir("/") < 0) throw new DaemonizeException(__FILE__, __LINE__);
+			close(STDIN_FILENO);
+			close(STDIOUT_FILENO);
+			close(STDERR_FILENO);
+			
+			// Open log file.
+			
 		} else if (pid >= 1)
 		{
 			// We are the parent
+			result = DaemonStatus::PARENT;
+			// Write a pid file so Systemd knows who our child is.
+			std::fstream pid_file = new std::fstream(PID_FILE, std::fstream::out | std::fstream::trunc);
+			pid_file.write(pid);
+			pid_file.close();
 		}
 	} else
 	{
-		// Fork failed.
+		throw new DaemonizeException(__FILE__, __LINE__);
 	}
-	
+	return result;
 }
 
 
