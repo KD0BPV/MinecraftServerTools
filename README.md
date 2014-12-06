@@ -2,10 +2,7 @@
 
 A set of tools for maintaining and interfacing with Minecraft server instances.
 
-###Note
-Basic design is not yet complete. Until basic design is complete, public pull requests will be *DISCARDED*.
-
-##Goals/Features
+###Goals/Features
 
 * minecraftd
   * Watchdog daemon
