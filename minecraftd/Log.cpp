@@ -29,10 +29,12 @@ void Log::write (Log::Level level, std::string msg)
 	if (level >= this->mask)
 	{
 		// Get timestamp
-		std::string timeStamp = "";
+		std::tm *time = std::localtime(std::time(0));
+		std::string timeStamp = "[" + time->tm_year + "-" + time->tm_mon + "-" + time->tm_mday +
+			" " + time->tm_hour + ":" + time->tm_min + ":" + time->tm_sec + "] ";
 		
 		// Get levelstamp
-		std::string levelStamp = "";
+		std::string levelStamp;
 		switch(level)
 		{
 			case Log::Level::DEBUG:

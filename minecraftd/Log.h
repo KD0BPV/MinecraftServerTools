@@ -25,6 +25,7 @@
 #define LOG_H
 
 #include <string>
+#include <ctime>
 
 enum class Log::State
 {
@@ -46,7 +47,7 @@ private:
 public:
 	Log();
 	Log(std::string, Level);
-	void write (Log::Level, std::string);
+	void write (Level, std::string);
 protected:
 	
 }

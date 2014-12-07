@@ -7,9 +7,7 @@
 class Exception : public std::exception
 {
 private:
-	int line;
-	std::string file;
-	std::string msg;
+	std::string msg = "";
 public:
 	virtual const char* what() const throw()
 	{
