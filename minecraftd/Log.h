@@ -27,13 +27,11 @@
 #include <string>
 #include <ctime>
 
-enum class Log::State
-{
+enum class Log::State {
 	OPEN, CLOSED, FAIL
 }
 
-enum class Log::Level
-{
+enum class Log::Level {
 	ALL, DEBUG, INFO, WARN, ERROR, FATAL
 }
 
@@ -49,6 +47,6 @@ public:
 	Log(std::string, Level);
 	void write (Level, std::string);
 protected:
-	
+
 }
 #endif

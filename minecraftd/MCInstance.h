@@ -28,8 +28,7 @@
 
 #include <string>
 
-enum class InstanceState
-{
+enum class InstanceState {
 	STARTING, RUNNING,
 	STOPPING, STOPPED,
 	FAILED
@@ -50,10 +49,10 @@ public:
 
 	void start();
 	void stop();
-	void restart() { stop(); start(); }
+	void restart() {stop(); start();}
 
 protected:
-	
+
 }
 
 #endif
