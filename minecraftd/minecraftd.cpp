@@ -32,14 +32,18 @@
 #include <sys/types.h>
 #include <unistd.h>
 /* Exit() */
-#include <stdlib.h>
+//#include <stdlib.h> /* Not sure if I really need this. */
 
+/* External libs */
+#include "lib/liblogging.hh"
+
+/* Our classes, defs, etc */
 #include "MCInstance.h"
 #include "exceptions.h"
 
 #define PID_FILE /var/run/minecraftd.pid
 
-enum class DaemonStatus{
+enum class DaemonStatus {
 	PARENT,
 	CHILD,
 	ERROR
@@ -51,14 +55,12 @@ int main(int argc, char *argv[])
 {
 	pid_t sid = 0;
 	try {
-		switch (daemonize(sid)) {
+		Logging::Log log;
+		switch (daemonize(sid, log)) {
 		case DaemonStatus::PARENT:
-			return EXIT_SUCCESS;
+			goto EXIT;
 			break;
 		case DaemonStatus::CHILD:
-			break;
-		case DaemonStatus::ERROR:
-			throw new DaemonizeException(__FILE__, __LINE__);
 			break;
 		}
 	} catch (DaemonizeException& e)	{
@@ -79,15 +81,15 @@ int main(int argc, char *argv[])
 
 
 
-	//Main Loop
+	/* Main Loop */
 	while (true) {
 
 	}
-
+EXIT:
 	return EXIT_SUCCESS;
 }
 
-DaemonStatus daemonize(pid_t &sid)
+DaemonStatus daemonize(pid_t &sid, Logging::Log &log)
 {
 	DaemonStatus result = DaemonStatus::ERROR;
 	pid_t pid = fork();
@@ -107,6 +109,8 @@ DaemonStatus daemonize(pid_t &sid)
 			close(STDERR_FILENO);
 
 			/* Open log file. */
+			log = new Logging::Log("/var/log/minecraftd.log",
+						Logging::Level::INFO);
 
 		} else if (pid >= 1) {
 			/* We are the parent */
