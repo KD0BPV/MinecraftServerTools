@@ -1,11 +1,9 @@
 /*
- * minecraftd/log.h
+ * liblogging.hh
  * 
- * minecraftd Logging Facility
+ * Logging Facility: Definition/API
  * 
  * Author: E. Mark Anderson <kd0bpv@gmail.com>
- * 
- * Interface file for log manager. 
  * 
  * Copyright (C) 2014 E. Mark Anderson
  * 
@@ -24,29 +22,30 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <string>
-#include <ctime>
-
-enum class Log::State {
-	OPEN, CLOSED, FAIL
-}
-
-enum class Log::Level {
-	ALL, DEBUG, INFO, WARN, ERROR, FATAL
-}
-
-class Log
+namespace Logging
 {
-private:
-	std::string path;
-	std::fstream file;
-	State state = State::CLOSED;
-	Level mask = Level::ALL;
-public:
-	Log();
-	Log(std::string, Level);
-	void write (Level, std::string);
-protected:
+	enum class State {
+		OPEN, CLOSED, FAIL
+	};
 
+	enum class Level {
+		ALL, DEBUG, INFO, WARN, ERROR, FATAL
+	};
+
+	class Log
+	{
+	public:
+		Log();
+		Log(std::string, Level);
+		~Log();
+		void write (Level, std::string);
+	protected:
+		
+	private:
+		std::string path;
+		std::fstream file;
+		State state = State::CLOSED;
+		Level mask = Level::ALL;
+	};
 }
 #endif
