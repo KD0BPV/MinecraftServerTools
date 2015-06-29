@@ -31,6 +31,21 @@ namespace Logging
 	enum class Level {
 		ALL, DEBUG, INFO, WARN, ERROR, FATAL
 	};
+	
+	/* Exception definitions. */
+	class Exception : public std::exception
+	{
+	public:
+		Exception (std::string file, int line, std::string msg);
+		virtual const char* where() const noexcept;
+		virtual const char* what() const noexcept;
+	protected:
+		
+	private:
+		std::string msg;
+		std::string file;
+		int line = 0;
+	};
 
 	class Log
 	{

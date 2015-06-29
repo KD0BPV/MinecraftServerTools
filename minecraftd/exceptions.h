@@ -6,35 +6,41 @@
 
 class Exception : public std::exception
 {
-private:
-	std::string msg = "";
 public:
-	virtual const char* what() const throw()
+	Exception(std::string file, int line, std::string msg = "")
 	{
-		return msg;
+		this->file = file;
+		this->line = line;
+		if (msg != "")
+			this->msg = msg;
+		else
+			this->msg = "Unspecified";
 	}
 	
-	Exception (std::string file, int line)
+	virtual const char* where() const noexcept
 	{
-		this->msg = "General Exception at: " + file + ", " + line;
+		std::string where = this->file +
+		" on line " + std::to_string(this->line);
+		return where.c_str();
 	}
-}
+	
+	virtual const char* Exception::what() const noexcept
+	{
+		return this->msg.c_str();
+	}
+protected:
+	std::string msg;
+	std::string file;
+	int line = 0;
+private:
+};
 
 class DaemonizeException : public Exception
 {
-public:
-	DaemonizeException (std::string file, int line)
+	DaemonizeException(std::string file, int line)
+	: Exception(file, line, "Daemonization Failure")
 	{
-		this->msg = "Failed to daemonize at: " + file + ", " + line;
 	}
 }
 
-class LogException : public Exception
-{
-public:
-	LogException (std::string file, int line)
-	{
-		this->msg = "Logging Exception at: " + file + ", " + line;
-	}
-}
 #endif
