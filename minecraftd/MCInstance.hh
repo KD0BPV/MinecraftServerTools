@@ -36,16 +36,10 @@ enum class InstanceState {
 
 class MCInstance
 {
-private:
-	string instanceDir;
-	InstanceState state = InstanceState::STOPPED;
-	int failCount = 0;
-	void setState(InstanceState);
-
 public:
 	InstanceState getState();
-	void doCommand(string);
-	void say(string);
+	void doCommand(std::string);
+	void say(std::string);
 
 	void start();
 	void stop();
@@ -53,6 +47,11 @@ public:
 
 protected:
 
-}
+private:
+	std::string instanceDir;
+	InstanceState state = InstanceState::STOPPED;
+	int failCount = 0;
+	void setState(InstanceState);
+};
 
 #endif

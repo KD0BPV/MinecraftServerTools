@@ -56,13 +56,7 @@ namespace Logging
 
 	Log::Log(std::string path, Level mask)
 	{
-		this->path = path;
-		this->mask = mask;
-		this->file.open(path, std::fstream::out | std::fstream::trunc);
-		if (!this->file.is_open())
-			throw new Exception(__FILE__, __LINE__,
-					    "Could not open log file");
-		this->state = State::OPEN;
+		this->openFile(path, mask);
 	}
 
 	Log::~Log()
@@ -71,6 +65,20 @@ namespace Logging
 			this->file.close();
 			this->state = State::CLOSED;
 		}
+	}
+	
+	Log::openFile(std::string path, Level mask)
+	{
+		if (this->file.is_open())
+			throw new Exception(__FILE__, __LINE__,
+					    "Log is already open");
+		this->path = path;
+		this->mask = mask;
+		this->file.open(path, std::fstream::out | std::fstream::trunc);
+		if (!this->file.is_open())
+			throw new Exception(__FILE__, __LINE__,
+					    "Could not open log file");
+			this->state = State::OPEN;
 	}
 
 	void Log::write (Level level, std::string msg)

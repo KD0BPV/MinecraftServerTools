@@ -51,9 +51,10 @@ namespace Logging
 	{
 	public:
 		Log();
-		Log(std::string, Level);
+		Log(std::string path, Level mask);
 		~Log();
-		void write (Level, std::string);
+		void openFile(std::string path, Level mask);
+		void write (Level level, std::string msg);
 	protected:
 		
 	private:

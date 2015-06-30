@@ -1,6 +1,6 @@
 CC = g++
 
-BUILD_DIR = ./BUILD/
+BUILD_DIR = build
 
 CFLAGS =
 
@@ -13,6 +13,3 @@ minecraftd : $(OBJ)
 	
 minecraftd.o : minecraftd.cpp MCInstance.h exceptions.h
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) minecraftd.cpp
-
-log.o : Log.h Log.cpp exceptions.h
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) 

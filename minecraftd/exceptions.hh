@@ -61,6 +61,7 @@ private:
 
 class DaemonizeException : public Exception
 {
+public:
 	DaemonizeException(std::string file, int line)
 	: Exception(file, line, "Daemonization Failure")
 	{

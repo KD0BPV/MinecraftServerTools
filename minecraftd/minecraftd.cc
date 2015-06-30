@@ -27,14 +27,15 @@
 #include <fstream>
 #include <deque>
 
-/* Fork(), pid_t */
+/* Fork(), pid_t, umask() */
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 /* Exit() */
 //#include <stdlib.h> /* Not sure if I really need this. */
 
 /* External libs */
-#include "lib/liblogging.hh"
+#include "lib/logging/liblogging.hh"
 
 /* Our classes, defs, etc */
 #include "MCInstance.hh"
@@ -46,9 +47,9 @@ enum class DaemonStatus {
 	PARENT,
 	CHILD,
 	ERROR
-}
+};
 
-DaemonStatus daemonize(pid_t&);
+DaemonStatus daemonize(pid_t&, Logging::Log&);
 
 int main(int argc, char *argv[])
 {
@@ -57,14 +58,16 @@ int main(int argc, char *argv[])
 		Logging::Log log;
 		switch (daemonize(sid, log)) {
 		case DaemonStatus::PARENT:
-			goto EXIT;
+			return EXIT_SUCCESS;
 			break;
 		case DaemonStatus::CHILD:
 			break;
+		default:
+			throw new Exception(__FILE__,__LINE__);
 		}
 	} catch (DaemonizeException& e)	{
 
-	} catch (exception& e) {
+	} catch (Exception& e) {
 
 	}
 	/* TODO: Create event bus. */
@@ -84,7 +87,6 @@ int main(int argc, char *argv[])
 	while (true) {
 
 	}
-EXIT:
 	return EXIT_SUCCESS;
 }
 
@@ -104,21 +106,20 @@ DaemonStatus daemonize(pid_t &sid, Logging::Log &log)
 			if (chdir("/") < 0) 
 				throw new DaemonizeException(__FILE__, __LINE__);
 			close(STDIN_FILENO);
-			close(STDIOUT_FILENO);
+			close(STDOUT_FILENO);
 			close(STDERR_FILENO);
 
 			/* Open log file. */
-			log = new Logging::Log("/var/log/minecraftd.log",
-						Logging::Level::INFO);
+			log.openFile("/var/log/minecraftd.log",
+					Logging::Level::INFO);
 
 		} else if (pid >= 1) {
 			/* We are the parent */
 			result = DaemonStatus::PARENT;
 			/* Write a pid file so Systemd knows who our child is. */
-			std::fstream pid_file =
-					new std::fstream(PID_FILE, 
+			std::fstream pid_file ("PID_FILE", 
 					std::fstream::out | std::fstream::trunc);
-			pid_file.write(pid);
+			pid_file << pid;
 			pid_file.close();
 		}
 	} else {
