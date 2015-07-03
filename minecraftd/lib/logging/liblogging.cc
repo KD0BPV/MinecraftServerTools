@@ -67,7 +67,7 @@ namespace Logging
 		}
 	}
 	
-	Log::openFile(std::string path, Level mask)
+	void Log::openFile(std::string path, Level mask)
 	{
 		if (this->file.is_open())
 			throw new Exception(__FILE__, __LINE__,

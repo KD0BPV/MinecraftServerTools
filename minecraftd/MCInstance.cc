@@ -23,4 +23,47 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ 
 
+#include <thread>
+#include <string>
+/* fstream derives from iostream, giving us both. :) */
+#include <fstream>
+
+#include "lib/event/libevent.hh"
 #include "MCInstance.hh"
+
+MCInstance::MCInstance()
+{
+	/* Initialize fields */
+	this->failCount = 0;
+	this->isModded = false;
+	this->state = State::STOPPED;
+	
+	/* Register our own event handlers */
+	this->onFail.register_handler([this] (const Event * ev) {
+		this->failCount++;
+		if (this->failCount >= FAIL_LIMIT || ev->abort == true)
+		{
+			this->state = State::FAILED;
+		}
+	});
+}
+
+void MCInstance::resetFailState()
+{
+	this->failCount = 0;
+	this->state = State::STOPPED;
+}
+
+void MCInstance::stop(bool force = false)
+{
+	if (force == true) {
+		/* Kill the process and declare failure. */
+		
+		
+		
+		this->onFail.abort = true;
+		this->onFail.fire();
+	} else {
+		
+	}
+}

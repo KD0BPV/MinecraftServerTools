@@ -28,30 +28,52 @@
 
 #include <string>
 
-enum class InstanceState {
-	STARTING, RUNNING,
-	STOPPING, STOPPED,
-	FAILED
+
+#define FAIL_LIMIT 3
+
+
+class FailEvent : public Event
+{
+public:
+	bool abort = false;
 };
 
 class MCInstance
 {
 public:
-	InstanceState getState();
-	void doCommand(std::string);
-	void say(std::string);
+	MCInstance();
+	State getState() {return state;}
+	int getFailCount() {return failCount;}
+	void resetFailState();
+	void doCommand(std::string cmd);
+	void say(std::string msg);
+	void run();
 
 	void start();
-	void stop();
+	void stop(bool force = false); /* if things REALLY break, pass true to kill.
+				  This will most certainly cause data loss though. */
 	void restart() {stop(); start();}
+	enum class State {
+		STARTING, RUNNING,
+		STOPPING, STOPPED,
+		FAILED
+	};
+	
+	/* Events */
+	FailEvent onFail;
 
 protected:
-
-private:
 	std::string instanceDir;
-	InstanceState state = InstanceState::STOPPED;
-	int failCount = 0;
-	void setState(InstanceState);
+	std::string serverJar;
+	bool isModded;
+	State state;
+	
+	/* How many times this instance failed. Used to limit automatic restarts
+	 * which could cause excessive load.
+	 */
+	int failCount;
+private:
+	
 };
 
 #endif

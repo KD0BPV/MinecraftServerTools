@@ -25,16 +25,14 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <deque>
+#include <vector>
 
 /* Fork(), pid_t, umask() */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-/* Exit() */
-//#include <stdlib.h> /* Not sure if I really need this. */
 
-/* External libs */
+/* Built libraries */
 #include "lib/logging/liblogging.hh"
 
 /* Our classes, defs, etc */
@@ -70,10 +68,9 @@ int main(int argc, char *argv[])
 	} catch (Exception& e) {
 
 	}
-	/* TODO: Create event bus. */
 
-	/* Daemon-wide data values (ie: deque of instances) */
-	std::deque<MCInstance> instances;
+	/* Daemon-wide data values (ie: vector of instances) */
+	std::vector<MCInstance> instances;
 
 	/*
 	 * Initialization

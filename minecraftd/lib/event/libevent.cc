@@ -36,10 +36,9 @@ namespace Events
 	
 	void Event::fire()
 	{
-		std::vector<Handler *>::iterator it;
-		for(it = handlers.begin(); it < handlers.end(); it++)
+		for (auto handler : handlers)
 		{
-			(**it)(this);
+			(*handler)(this);
 		}
 	}
 }
