@@ -23,21 +23,30 @@
 
 #ifndef LIBEVENT_H
 #define LIBEVENT_H
+
+#include <functional>
+#include <vector>
+
 namespace Events
-{
-	class Event;
-	using Handler = std::function<void(const Event *)>;
+{	
+	template<class T>
+	using Handler = std::function<void (const T *)>;
+	
+	/* Subscribed handlers must accept a pointer to the object that fired
+	 * the event and may not change the object's state, which could screw up
+	 * other handlers' logic.
+	 */
+	template <class T>
 	class Event
 	{
 	public:
-		virtual Handler* register_handler(Handler *handler);
-		virtual void fire();
+		virtual void subscribe(Handler<T> handler);
+		virtual void fire(T *object);
 		
 	protected:
-		std::vector<Handler*> handlers;
+		std::vector<Handler<T>> handlers;
 	private:
 		
 	};
-
 }
 #endif

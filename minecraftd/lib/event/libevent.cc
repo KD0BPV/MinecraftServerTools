@@ -21,24 +21,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <functional>
-#include <vector>
 
 #include "libevent.hh"
 
 namespace Events
 {
-	Handler* Event::register_handler(Handler *handler)
+	template <class T>
+	void Event<T>::subscribe(Handler<T> handler)
 	{
 		handlers.push_back(handler);
-		return handler;
 	}
 	
-	void Event::fire()
+	template <class T>
+	void Event<T>::fire(T *object)
 	{
 		for (auto handler : handlers)
 		{
-			(*handler)(this);
+			handler(object);
 		}
 	}
 }
