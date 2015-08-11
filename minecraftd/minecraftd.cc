@@ -32,14 +32,17 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+/* Systemd journaling */
+#include <systemd/sd-journal.h>
+
 /* Built libraries */
-#include "lib/logging/liblogging.hh"
+//#include "lib/logging/liblogging.hh"
 
 /* Our classes, defs, etc */
 #include "MCInstance.hh"
 #include "exceptions.hh"
 
-#define PID_FILE /var/run/minecraftd.pid
+#define PID_FILE /run/minecraft/minecraftd.pid
 
 enum class DaemonStatus {
 	PARENT,
@@ -53,20 +56,18 @@ int main(int argc, char *argv[])
 {
 	pid_t sid = 0;
 	try {
-		Logging::Log log;
-		switch (daemonize(sid, log)) {
+		switch (daemonize(sid)) {
 		case DaemonStatus::PARENT:
 			return EXIT_SUCCESS;
 			break;
 		case DaemonStatus::CHILD:
 			break;
 		default:
-			throw new Exception(__FILE__,__LINE__);
+			throw daemonize_fail;
 		}
-	} catch (DaemonizeException& e)	{
-
-	} catch (Exception& e) {
-
+	} catch (daemonize_fail e)	{
+		sd_journal_print(LOG_CRIT, e.what());
+		return 1;
 	}
 
 	/* Daemon-wide data values (ie: vector of instances) */
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
 
 	/*
 	 * Initialization
-	 * This is where we parse arguments, load configs, launch configured 
+	 * This is where we parse arguments, load configs, launch configured
 	 * instances, attach to running instances, etc.
 	 */
 
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
-DaemonStatus daemonize(pid_t &sid, Logging::Log &log)
+DaemonStatus daemonize(pid_t &sid)
 {
 	DaemonStatus result = DaemonStatus::ERROR;
 	pid_t pid = fork();
@@ -97,30 +98,28 @@ DaemonStatus daemonize(pid_t &sid, Logging::Log &log)
 			/* We are the child */
 			result = DaemonStatus::CHILD;
 			sid = setsid();
-			if (sid < 0) 
-				throw new DaemonizeException(__FILE__, __LINE__);
+			if (sid < 0)
+				throw daemonize_fail;
 			umask(0);
-			if (chdir("/") < 0) 
-				throw new DaemonizeException(__FILE__, __LINE__);
+			if (chdir("/") < 0)
+				throw daemonize_fail;
 			close(STDIN_FILENO);
 			close(STDOUT_FILENO);
 			close(STDERR_FILENO);
 
-			/* Open log file. */
-			log.openFile("/var/log/minecraftd.log",
-					Logging::Level::INFO);
+
 
 		} else if (pid >= 1) {
 			/* We are the parent */
 			result = DaemonStatus::PARENT;
 			/* Write a pid file so Systemd knows who our child is. */
-			std::fstream pid_file ("PID_FILE", 
+			std::fstream pid_file ("PID_FILE",
 					std::fstream::out | std::fstream::trunc);
 			pid_file << pid;
 			pid_file.close();
 		}
 	} else {
-		throw new DaemonizeException(__FILE__, __LINE__);
+		throw daemonize_fail;
 	}
 	return result;
 }
