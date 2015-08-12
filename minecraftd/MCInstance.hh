@@ -38,45 +38,47 @@
 #define FAIL_LIMIT 3
 #endif
 
-enum class MCInstance::State {
-	STARTING, RUNNING,
-	STOPPING, STOPPED,
-	FAILED
-};
-
-struct MCInstance::Config
-{
-	/* Where am I? */
-	std::string InstancePath;
-
-	/* Who am I? */
-	std::string MCVersion;
-	std::string ForgeVersion = "none";
-	std::string ServerJar;
-
-	/* JVM Options */
-	std::string MinHeap = "512M";
-	std::string MaxHeap = "1G";
-	bool x64Mode = false; // Don't assume environment is 64-bit.
-	std::string MiscJVMArgs;
-
-	/* Minecraft Options */
-	bool OnlineMode = true;
-	std::string MiscMCArgs;
-};
-
 /* TODO: Probably should make fields Atomic. After all, I'm working with
  * threads here...
  */
 class MCInstance
 {
 public:
+	/* Member types */
+	enum class State {
+		STARTING, RUNNING,
+		STOPPING, STOPPED,
+		FAILED
+	};
+
+	struct Config
+	{
+		/* Where am I? */
+		char* InstancePath;
+
+		/* Who am I? */
+		char* MCVersion;
+		char* ForgeVersion;
+		char* ServerJar;
+		char* UUID;
+
+		/* JVM Options */
+		char* MinHeap;
+		char* MaxHeap;
+		bool x64Mode = false; // Don't assume environment is 64-bit.
+		char* MiscJVMArgs;
+
+		/* Minecraft Options */
+		bool OnlineMode = true;
+		char* MiscMCArgs;
+	};
+
 	MCInstance();
 	~MCInstance();
 
 	/* Inspection methods */
-	State getState() const noexcept {return state;}
-	int getFailCount() const noexcept {return failCount;}
+	State getState() const noexcept {return state.load();}
+	int getFailCount() const noexcept {return failCount.load();}
 	void resetFailState() noexcept;
 
 	/* Management methods */
@@ -95,7 +97,6 @@ public:
 
 	/* Operator Overloads */
 	MCInstance* operator<< (std::string raw); // "alias" for sendRaw()
-
 protected:
 	std::thread runner;
 	void run(); // Wrapper for Server Jar. Run in thread.

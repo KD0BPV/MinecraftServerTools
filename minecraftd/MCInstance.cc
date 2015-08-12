@@ -23,35 +23,40 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <systemd/sd-journal.h>
+
 #include "MCInstance.hh"
 
 MCInstance::MCInstance()
 {
-	/* Initialize fields */
-	failCount = 0;
-	state = State::STOPPED;
+	failCount.store(0);
+	state.store(State::STOPPED);
 }
 
 void MCInstance::resetFailState() noexcept
 {
-	failCount = 0;
-	state = State::STOPPED;
+	failCount.store(0);
+	state.store(State::STOPPED);
 }
 
 bool MCInstance::stop(bool force)
 {
-	if (state == State::STOPPING || state == State::STOPPED ||
+	State s = state.load();
+	if (s == State::STOPPING || s == State::STOPPED ||
 		!runner.joinable())
 		return false;
 
 	if (force == true) {
 		/* Kill the process and declare failure. */
-
+		sd_journal_print(LOG_NOTICE,
+			"Forcibly stopping Instace " + cfg.load().UUID);
 
 
 		FailEvent.fire(this);
 	} else {
 		/* Close the process cleanly */
+		sd_journal_print(LOG_NOTICE,
+			"Stopping Instance " + cfg.load().UUID);
 
 	}
 
@@ -61,17 +66,42 @@ bool MCInstance::stop(bool force)
 
 bool MCInstance::start()
 {
-	if (runner.joinable() || state == State::STARTING ||
-		state == State::RUNNING)
+	auto const UUID = cfg.load().UUID;
+	sd_journal_print(LOG_NOTICE,
+		"Attempting to start Instance %i", UUID);
+
+	State s = state.load();
+	if (runner.joinable() ||
+	    (s == State::STARTING ||
+	     s == State::RUNNING)) {
+		sd_journal_print(LOG_WARN,
+			"Instance %i appears to be already running.",
+			UUID);
 		return false;
+	}
 
 	runner = new std::thread (&MCInstance::run(), this);
-	return true;
+	if (runner.joinable()) {
+		state.store(State::STARTING);
+		sd_journal_print(LOG_INFO,
+			"Instance %i is starting", UUID);
+		return true;
+	} else {
+		failCount.store(failCount.load()+1);
+		sd_journal_print(LOG_ERR,
+			"Could not start Instance %i", UUID);
+		return fasle;
+	}
 }
 
+/* Remember, we're working in a separate thread here. Stay thread-safe! */
 void MCInstance::run()
 {
+	state.store(State::STARTING);
 
+	while (true) {
+
+	}
 }
 
 void MCInstance::sendRaw(std::string raw)

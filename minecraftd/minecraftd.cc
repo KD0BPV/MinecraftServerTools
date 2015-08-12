@@ -42,7 +42,7 @@
 #include "MCInstance.hh"
 #include "exceptions.hh"
 
-#define PID_FILE /run/minecraft/minecraftd.pid
+#define PID_FILE "/run/minecraft/minecraftd.pid"
 
 enum class DaemonStatus {
 	PARENT,
@@ -50,7 +50,7 @@ enum class DaemonStatus {
 	ERROR
 };
 
-DaemonStatus daemonize(pid_t&, Logging::Log&);
+DaemonStatus daemonize(pid_t&);
 
 int main(int argc, char *argv[])
 {
@@ -63,9 +63,9 @@ int main(int argc, char *argv[])
 		case DaemonStatus::CHILD:
 			break;
 		default:
-			throw daemonize_fail;
+			throw new daemonize_fail;
 		}
-	} catch (daemonize_fail e)	{
+	} catch (daemonize_fail& e)	{
 		sd_journal_print(LOG_CRIT, e.what());
 		return 1;
 	}
@@ -99,10 +99,10 @@ DaemonStatus daemonize(pid_t &sid)
 			result = DaemonStatus::CHILD;
 			sid = setsid();
 			if (sid < 0)
-				throw daemonize_fail;
+				throw new daemonize_fail;
 			umask(0);
 			if (chdir("/") < 0)
-				throw daemonize_fail;
+				throw new daemonize_fail;
 			close(STDIN_FILENO);
 			close(STDOUT_FILENO);
 			close(STDERR_FILENO);
@@ -113,13 +113,13 @@ DaemonStatus daemonize(pid_t &sid)
 			/* We are the parent */
 			result = DaemonStatus::PARENT;
 			/* Write a pid file so Systemd knows who our child is. */
-			std::fstream pid_file ("PID_FILE",
+			std::fstream pid_file (PID_FILE,
 					std::fstream::out | std::fstream::trunc);
 			pid_file << pid;
 			pid_file.close();
 		}
 	} else {
-		throw daemonize_fail;
+		throw new daemonize_fail;
 	}
 	return result;
 }
