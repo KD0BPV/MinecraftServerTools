@@ -65,11 +65,11 @@ public:
 		/* JVM Options */
 		char* MinHeap;
 		char* MaxHeap;
-		bool x64Mode = false; // Don't assume environment is 64-bit.
+		bool x64Mode; // Don't assume environment is 64-bit.
 		char* MiscJVMArgs;
 
 		/* Minecraft Options */
-		bool OnlineMode = true;
+		bool OnlineMode;
 		char* MiscMCArgs;
 	};
 
