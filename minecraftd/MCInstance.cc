@@ -41,6 +41,7 @@ void MCInstance::resetFailState() noexcept
 
 bool MCInstance::stop(bool force)
 {
+	char* UUID = cfg.load().UUID;
 	State s = state.load();
 	if (s == State::STOPPING || s == State::STOPPED ||
 		!runner.joinable())
@@ -49,14 +50,14 @@ bool MCInstance::stop(bool force)
 	if (force == true) {
 		/* Kill the process and declare failure. */
 		sd_journal_print(LOG_NOTICE,
-			"Forcibly stopping Instace " + cfg.load().UUID);
+			"Forcibly stopping Instace %i", *UUID);
 
 
 		FailEvent.fire(this);
 	} else {
 		/* Close the process cleanly */
 		sd_journal_print(LOG_NOTICE,
-			"Stopping Instance " + cfg.load().UUID);
+			"Stopping Instance %i", *UUID);
 
 	}
 
@@ -66,31 +67,31 @@ bool MCInstance::stop(bool force)
 
 bool MCInstance::start()
 {
-	auto const UUID = cfg.load().UUID;
+	char* UUID = cfg.load().UUID;
 	sd_journal_print(LOG_NOTICE,
-		"Attempting to start Instance %i", UUID);
+		"Attempting to start Instance %i", *UUID);
 
 	State s = state.load();
 	if (runner.joinable() ||
 	    (s == State::STARTING ||
 	     s == State::RUNNING)) {
-		sd_journal_print(LOG_WARN,
+		sd_journal_print(LOG_WARNING,
 			"Instance %i appears to be already running.",
-			UUID);
+			*UUID);
 		return false;
 	}
 
-	runner = new std::thread (&MCInstance::run(), this);
+	runner = std::thread (&MCInstance::run, this);
 	if (runner.joinable()) {
 		state.store(State::STARTING);
 		sd_journal_print(LOG_INFO,
-			"Instance %i is starting", UUID);
+			"Instance %i is starting", *UUID);
 		return true;
 	} else {
 		failCount.store(failCount.load()+1);
 		sd_journal_print(LOG_ERR,
-			"Could not start Instance %i", UUID);
-		return fasle;
+			"Could not start Instance %i", *UUID);
+		return false;
 	}
 }
 

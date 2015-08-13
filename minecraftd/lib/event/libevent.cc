@@ -31,7 +31,7 @@ namespace Events
 	{
 		handlers.push_back(handler);
 	}
-	
+
 	template <class T>
 	void Event<T>::fire(T *object)
 	{
