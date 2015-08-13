@@ -27,6 +27,8 @@
 
 #include "MCInstance.hh"
 
+Events::Event<MCInstance> MCInstance::FailEvent;
+
 MCInstance::MCInstance()
 {
 	failCount.store(0);

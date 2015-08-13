@@ -32,7 +32,7 @@
 /* fstream derives from iostream, giving us both. :) */
 #include <fstream>
 
-#include "lib/event/libevent.hh"
+#include "event.hh"
 
 #ifndef FAIL_LIMIT
 #define FAIL_LIMIT 3

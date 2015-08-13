@@ -1,7 +1,7 @@
 /*
- * minecraftd/lib/libevent.cc
+ * minecraftd/lib/libevent.hh
  *
- * Events library: Implementation
+ * Events library: Definition/API
  *
  * Author: E. Mark Anderson <kd0bpv@gmail.com>
  *
@@ -21,11 +21,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef LIBEVENT_H
+#define LIBEVENT_H
 
-#include "libevent.hh"
+#include <functional>
+#include <vector>
 
 namespace Events
 {
+	template<class T>
+	using Handler = std::function<void (const T *)>;
+
+	/* Subscribed handlers must accept a pointer to the object that fired
+	 * the event and may not change the object's state, which could screw up
+	 * other handlers' logic.
+	 */
+	template <class T>
+	class Event
+	{
+	public:
+		virtual void subscribe(Handler<T> handler);
+		virtual void fire(T *object);
+
+	protected:
+		std::vector<Handler<T>> handlers;
+	private:
+
+	};
+
 	template <class T>
 	void Event<T>::subscribe(Handler<T> handler)
 	{
@@ -41,3 +64,4 @@ namespace Events
 		}
 	}
 }
+#endif
