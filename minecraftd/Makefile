@@ -1,15 +1,30 @@
-CC = g++
+CC = clang++
 
 BUILD_DIR = build
 
-CFLAGS =
+CFLAGS = -std=c++14
 
-CPPFLAGS = -std=c++14 -stdlib=libc++
+.phony : all
 
-OBJ = minecraftd.o log.o MCInstance.o exceptions.o
+all : $(BUILD_DIR) $(BUILD_DIR)/minecraftd
 
-minecraftd : $(OBJ)
-	$(CC) -o minecraftd $(OBJ)
-	
-minecraftd.o : minecraftd.cpp MCInstance.h exceptions.h
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) minecraftd.cpp
+$(BUILD_DIR)/minecraftd : $(BUILD_DIR)/minecraftd.o $(BUILD_DIR)/MCInstance.o
+	$(CC) $(BUILD_DIR)/minecraftd.o $(BUILD_DIR)/MCInstance.o \
+	-o $(BUILD_DIR)/minecraftd -lsystemd -lpthread -latomic
+
+$(BUILD_DIR)/minecraftd.o : minecraftd.cc exceptions.hh
+	$(CC) -c $(CFLAGS) minecraftd.cc -o $(BUILD_DIR)/minecraftd.o
+
+$(BUILD_DIR)/MCInstance.o : MCInstance.cc MCInstance.hh
+	$(CC) -c $(CFLAGS) MCInstance.cc -o $(BUILD_DIR)/MCInstance.o
+
+$(BUILD_DIR) :
+	mkdir $(BUILD_DIR)
+
+.PHONY : clean disinfect
+
+clean :
+	rm $(BUILD_DIR)/*
+
+disinfect :
+	rm -Rf $(BUILD_DIR)

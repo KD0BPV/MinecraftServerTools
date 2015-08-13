@@ -35,9 +35,6 @@
 /* Systemd journaling */
 #include <systemd/sd-journal.h>
 
-/* Built libraries */
-//#include "lib/logging/liblogging.hh"
-
 /* Our classes, defs, etc */
 #include "MCInstance.hh"
 #include "exceptions.hh"
